@@ -14,8 +14,12 @@ float kd=10.0;
 float ki=0;
 int l_error=0;
 float integral=0.0;
+float derivative=0.0;
+float correction_error=0.0;
 int b_speed=150;
 int max_speed=180;
+int l_m_speed=0;
+int r_m_speed=0;
 void setup() {
   // put your setup code here, to run once:
   for(int i=0;i<4;i++)
@@ -36,34 +40,15 @@ void loop() {
   {
      sensor_value[i]=analogRead(sensor[i]);
   }
- // int error=((-3*sensor_value[0])+(-1*sensor_value[1])+(1*sensor_value[2])+(3*sensor_value[3]));
-  if((sensor_value[0]>800) && (sensor_value[1]>800)){
-    digitalWrite(in3,LOW);
-    digitalWrite(in4,HIGH);
-     digitalWrite(in2,LOW);
-    digitalWrite(in1,HIGH);
-    analogWrite(ena,120);
-    analogWrite(enb,60);
-  }
-   else if((sensor_value[2]>800) && (sensor_value[3]>800)){
-    digitalWrite(in3,HIGH);
-    digitalWrite(in4,LOW);
-     digitalWrite(in2,HIGH);
-    digitalWrite(in1,LOW);
-    analogWrite(enb,120);
-    analogWrite(ena,60);
-  }
-  else if(sensor_value[1]>800) && (sensor_value[2]>800){
-    digitalWrite(in3,HIGH);
-    digitalWrite(in4,LOW);
-     digitalWrite(in2,LOW);
-    digitalWrite(in1,HIGH);
-    analogWrite(enb,120);
-    analogWrite(ena,120);
-  }
-
-  
-
-
-
+  int error=((-3*sensor_value[0])+(-1*sensor_value[1])+(1*sensor_value[2])+(3*sensor_value[3]));
+  integral=integral + error;
+  derivative=error-l_error;
+   correction_error=(kp*error)+ (ki*integral)+ (kd*derivative);
+   l_error=error;
+   l_m_speed=b_speed+correction_error;
+  r_m_speed=b_speed+correction_error;
+  l_m_speed=constrain(l_m_speed,0, max_speed);
+  r_m_speed=constrain(r_m_speed,0, max_speed);
+  analogWrite(ena, l_m_speed);
+   analogWrite(enb, r_m_speed);
 }
